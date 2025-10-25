@@ -1,34 +1,48 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<projectDescription>
-	<name>demo</name>
-	<comment></comment>
-	<projects>
-	</projects>
-	<buildSpec>
-		<buildCommand>
-			<name>org.eclipse.jdt.core.javabuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-		<buildCommand>
-			<name>org.eclipse.m2e.core.maven2Builder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-	</buildSpec>
-	<natures>
-		<nature>org.eclipse.jdt.core.javanature</nature>
-		<nature>org.eclipse.m2e.core.maven2Nature</nature>
-	</natures>
-	<filteredResources>
-		<filter>
-			<id>1761427712889</id>
-			<name></name>
-			<type>30</type>
-			<matcher>
-				<id>org.eclipse.core.resources.regexFilterMatcher</id>
-				<arguments>node_modules|\.git|__CREATED_BY_JAVA_LANGUAGE_SERVER__</arguments>
-			</matcher>
-		</filter>
-	</filteredResources>
-</projectDescription>
+package com.example.demo.config;
+
+import com.example.demo.entities.*;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
+import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+
+/**
+ * <h1>RestDataConfig</h1>
+ * per course instructions include this code to configure the rest api end-points exposed for the project
+ * TODO restrict non-used rest api end points
+ * <p>
+ *
+ * @author WGU Course Materials
+ * @version 0.1
+ * @since 2023-02-27
+ */
+@Configuration
+public class RestDataConfig implements RepositoryRestConfigurer {
+
+    /**
+     * This method exposes standard rest api end points for the following classes:
+     * Country
+     * Customer
+     * Division
+     * Excursion
+     * Vacation
+     * <p>
+     * Set page configuration parameters
+     *
+     * @param config
+     * @param cors
+     */
+    @Override
+    public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config, CorsRegistry cors) {
+        config.exposeIdsFor(Country.class);
+        config.exposeIdsFor(Customer.class);
+        config.exposeIdsFor(Division.class);
+        config.exposeIdsFor(Excursion.class);
+        config.exposeIdsFor(Vacation.class);
+        config.setDefaultPageSize(Integer.MAX_VALUE);
+        config.setMaxPageSize(Integer.MAX_VALUE);
+
+
+    }
+}
+

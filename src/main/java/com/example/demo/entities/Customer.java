@@ -8,7 +8,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-// Task G complete
 @Entity
 @Getter
 @Setter

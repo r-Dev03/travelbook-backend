@@ -22,4 +22,3 @@ public class CheckoutController {
     }
 }
 
-// Checkout controller has been implemented in the previous task so I can test everything

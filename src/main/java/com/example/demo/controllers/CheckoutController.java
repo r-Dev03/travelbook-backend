@@ -1,5 +1,4 @@
 package com.example.demo.controllers;
-
 import com.example.demo.services.CheckoutService;
 import com.example.demo.services.Purchase;
 import com.example.demo.services.PurchaseResponse;
@@ -22,3 +21,5 @@ public class CheckoutController {
         return checkoutService.placeOrder(purchase);
     }
 }
+
+// Checkout controller has been implemented in the previous task so I can test everything

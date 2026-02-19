@@ -17,7 +17,7 @@ TravelBook Backend is a Spring Boot REST API that provides backend functionality
 - Shopping cart and checkout processing
 - Order tracking
 
-This backend integrates with an existing Angular frontend to provide a complete booking experience.
+This backend integrates with a separate Angular frontend to provide a complete booking experience.
 
 ## Tech Stack
 
@@ -64,43 +64,26 @@ This backend was built to replace a legacy 1990s system for a travel agency. The
 └─────────────────────────────────┘
 ```
 
-### Package Structure
-```
-com.travelbook.backend/
-├── config/              # Spring configuration
-│   └── RestDataConfig.java
-├── controllers/         # REST controllers
-│   └── CheckoutController.java
-├── entities/           # JPA entities
-│   ├── Customer.java
-│   ├── Cart.java
-│   ├── CartItem.java
-│   ├── Vacation.java
-│   ├── Excursion.java
-│   └── Division.java
-├── dao/                # Repository interfaces
-│   ├── CustomerRepository.java
-│   ├── CartRepository.java
-│   ├── VacationRepository.java
-│   └── ExcursionRepository.java
-└── services/           # Business logic
-    ├── CheckoutService.java
-    ├── CheckoutServiceImpl.java
-    ├── Purchase.java
-    └── PurchaseResponse.java
-```
-
 ## Data Model
 
 ### Key Entities
 
 **Customer**
 - Customer information (name, address, phone)
+- Linked to Division (state/province) and Country
 - One-to-many relationship with Carts
+
+**Country**
+- Geographic country (e.g., USA, Canada)
+- One-to-many relationship with Divisions
+
+**Division**
+- State/province within a country
+- One-to-many relationship with Customers
 
 **Cart**
 - Shopping cart for a customer
-- Package type (vacation or business)
+- Status type (enum: PENDING, COMPLETED, CANCELLED)
 - Order tracking number
 - Many-to-many relationship with CartItems
 
@@ -112,9 +95,6 @@ com.travelbook.backend/
 **Excursion**
 - Activity/tour packages
 - Price, dates, associated vacation
-
-**Division**
-- Geographic divisions (countries/states)
 
 **CartItem**
 - Join entity for Cart-Excursion relationship
@@ -232,6 +212,54 @@ The API will be available at: `http://localhost:8080`
 }
 ```
 
+## Project Structure
+```
+travelbook-backend/
+├── mvnw                             # Maven wrapper (Unix)
+├── mvnw.cmd                         # Maven wrapper (Windows)
+├── pom.xml                          # Maven dependencies
+├── README.md
+└── src/
+    ├── main/
+    │   ├── java/
+    │   │   └── com/example/demo/
+    │   │       ├── DemoApplication.java         # Spring Boot entry point
+    │   │       ├── BootStrapData/
+    │   │       │   └── BootStrapData.java       # Sample data loader
+    │   │       ├── config/
+    │   │       │   └── RestDataConfig.java      # CORS & REST config
+    │   │       ├── controllers/
+    │   │       │   └── CheckoutController.java  # POST /api/checkout/purchase
+    │   │       ├── dao/
+    │   │       │   ├── CartItemRepository.java
+    │   │       │   ├── CartRepository.java
+    │   │       │   ├── CountryRepository.java
+    │   │       │   ├── CustomerRepository.java
+    │   │       │   ├── DivisionRepository.java
+    │   │       │   ├── ExcursionRepository.java
+    │   │       │   └── VacationRepository.java
+    │   │       ├── entities/
+    │   │       │   ├── Cart.java
+    │   │       │   ├── CartItem.java
+    │   │       │   ├── Country.java             # Geographic countries
+    │   │       │   ├── Customer.java
+    │   │       │   ├── Division.java            # States/provinces
+    │   │       │   ├── Excursion.java
+    │   │       │   ├── StatusType.java          # Cart status enum
+    │   │       │   └── Vacation.java
+    │   │       └── services/
+    │   │           ├── CheckoutService.java     # Interface
+    │   │           ├── CheckoutServiceImpl.java # Implementation
+    │   │           ├── Purchase.java            # Request DTO
+    │   │           └── PurchaseResponse.java    # Response DTO
+    │   └── resources/
+    │       └── application.properties           # Database config
+    └── test/
+        └── java/
+            └── com/example/demo/
+                └── DemoApplicationTests.java    # Basic test
+```
+
 ## Key Features
 
 ### Input Validation
@@ -269,7 +297,7 @@ public interface VacationRepository extends JpaRepository<Vacation, Long> {
 Five sample customers are programmatically added on application startup (without overwriting existing data):
 ```java
 @Component
-public class DataLoader implements CommandLineRunner {
+public class BootStrapData implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         if (customerRepository.count() == 0) {
@@ -319,15 +347,7 @@ This backend is designed to work with an Angular frontend located at `http://loc
 
 ## Development Workflow
 
-**1. GitLab Workflow:**
-```bash
-# After completing a feature
-git add .
-git commit -m "Add customer validation"
-git push origin main
-```
-
-**2. Typical Development Cycle:**
+**1. Typical Development Cycle:**
 - Create/modify JPA entity
 - Generate repository interface
 - Implement service layer if needed

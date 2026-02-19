@@ -110,26 +110,35 @@ This backend was built to replace a legacy 1990s system for a travel agency. The
 
 ### Database Setup
 
-**1. Create MySQL database:**
+**1. Create MySQL database and user:**
 ```sql
-CREATE DATABASE travelbook;
-CREATE USER 'travelbook_user'@'localhost' IDENTIFIED BY 'your_password';
-GRANT ALL PRIVILEGES ON travelbook.* TO 'travelbook_user'@'localhost';
+CREATE DATABASE `full-stack-ecommerce`;
+CREATE USER 'ecommerceapp'@'localhost' IDENTIFIED BY 'ecommerceapp';
+GRANT ALL PRIVILEGES ON `full-stack-ecommerce`.* TO 'ecommerceapp'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
-**2. Configure database connection:**
+**2. Create database schema:**
 
-Edit `src/main/resources/application.properties`:
+The application expects a pre-existing database schema with the following tables:
+- `customers`, `countries`, `divisions`
+- `vacations`, `excursions`
+- `carts`, `cart_items`
+
+**Note:** The schema is not auto-generated (`spring.jpa.hibernate.ddl-auto=none` in configuration). The database schema should be created manually or obtained from course materials before running the application.
+
+**3. Verify database configuration:**
+
+The application is pre-configured in `src/main/resources/application.properties`:
 ```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/travelbook
-spring.datasource.username=travelbook_user
-spring.datasource.password=your_password
-
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
+spring.datasource.url=jdbc:mysql://localhost:3306/full-stack-ecommerce
+spring.datasource.username=ecommerceapp
+spring.datasource.password=ecommerceapp
+spring.jpa.hibernate.ddl-auto=none
+spring.data.rest.base-path=/api
 ```
+
+**Security Note:** For production deployment, change the database password to something secure.
 
 ### Build & Run
 
@@ -150,6 +159,8 @@ mvn spring-boot:run
 ```
 
 The API will be available at: `http://localhost:8080`
+
+**Note:** All API endpoints are prefixed with `/api` (e.g., `http://localhost:8080/api/vacations`)
 
 ## API Endpoints
 
@@ -326,6 +337,7 @@ Content-Type: application/json
 
 Use MySQL Workbench to verify data persistence:
 ```sql
+USE full-stack-ecommerce;
 SELECT * FROM customers;
 SELECT * FROM carts;
 SELECT * FROM cart_items;
@@ -347,7 +359,7 @@ This backend is designed to work with an Angular frontend located at `http://loc
 
 ## Development Workflow
 
-**1. Typical Development Cycle:**
+**Typical Development Cycle:**
 - Create/modify JPA entity
 - Generate repository interface
 - Implement service layer if needed
@@ -363,6 +375,7 @@ This backend is designed to work with an Angular frontend located at `http://loc
 - No payment processing
 - No email notifications
 - Minimal error handling beyond validation
+- Manual database schema setup required
 
 **Design Trade-offs:**
 - Used Spring Data REST for auto-generated endpoints (rapid development vs. control)
@@ -388,6 +401,7 @@ This backend is designed to work with an Angular frontend located at `http://loc
 - Set up CI/CD pipeline
 - Add API documentation (Swagger/OpenAPI)
 - Implement caching for frequently accessed data
+- Automated database migration (Flyway/Liquibase)
 
 **Scalability:**
 - Database indexing optimization
@@ -398,13 +412,16 @@ This backend is designed to work with an Angular frontend located at `http://loc
 ## Common Issues
 
 **Issue: Application fails to start - "Table doesn't exist"**
-- Solution: Set `spring.jpa.hibernate.ddl-auto=create` on first run, then change to `update`
+- Solution: Ensure database schema is created before running the application. The schema is not auto-generated.
 
 **Issue: CORS errors from Angular frontend**
-- Solution: Verify `@CrossOrigin` annotation includes Angular dev server URL
+- Solution: Verify `@CrossOrigin` annotation includes Angular dev server URL (`http://localhost:4200`)
 
 **Issue: Validation errors not showing in response**
 - Solution: Add `@Valid` annotation to controller method parameters
+
+**Issue: Database connection refused**
+- Solution: Verify MySQL is running and credentials in `application.properties` are correct
 
 ## License
 

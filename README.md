@@ -17,7 +17,7 @@ TravelBook Backend is a Spring Boot REST API that provides backend functionality
 - Shopping cart and checkout processing
 - Order tracking
 
-This backend integrates with a separate Angular frontend to provide a complete booking experience.
+This backend integrates with an Angular frontend ([TravelBook Frontend](https://github.com/yourusername/travelbook-frontend)) to provide a complete booking experience.
 
 ## Tech Stack
 
@@ -110,24 +110,32 @@ This backend was built to replace a legacy 1990s system for a travel agency. The
 
 ### Database Setup
 
-**1. Create MySQL database and user:**
-```sql
-CREATE DATABASE `full-stack-ecommerce`;
-CREATE USER 'ecommerceapp'@'localhost' IDENTIFIED BY 'ecommerceapp';
-GRANT ALL PRIVILEGES ON `full-stack-ecommerce`.* TO 'ecommerceapp'@'localhost';
-FLUSH PRIVILEGES;
+**1. Initialize the database using the provided SQL script:**
+
+This project includes `create_and_populate_db.sql` which sets up the complete database.
+
+**What the script does:**
+- Drops and recreates the `full-stack-ecommerce` database
+- Creates all tables (customers, countries, divisions, vacations, excursions, carts, cart_items)
+- Inserts sample data (demo customer, vacation packages, excursions)
+- Creates database user `ecommerceapp` with password `ecommerceapp`
+- Grants necessary permissions
+
+**To run the script:**
+
+**Option A: MySQL Workbench (Recommended)**
+1. Open MySQL Workbench
+2. Connect to your local MySQL instance
+3. Go to File > Open SQL Script
+4. Select `create_and_populate_db.sql` from the project root
+5. Click the lightning bolt icon to execute
+
+**Option B: MySQL Command Line**
+```bash
+mysql -u root -p < create_and_populate_db.sql
 ```
 
-**2. Create database schema:**
-
-The application expects a pre-existing database schema with the following tables:
-- `customers`, `countries`, `divisions`
-- `vacations`, `excursions`
-- `carts`, `cart_items`
-
-**Note:** The schema is not auto-generated (`spring.jpa.hibernate.ddl-auto=none` in configuration). The database schema should be created manually or obtained from course materials before running the application.
-
-**3. Verify database configuration:**
+**2. Verify database configuration:**
 
 The application is pre-configured in `src/main/resources/application.properties`:
 ```properties
@@ -148,12 +156,18 @@ git clone https://github.com/yourusername/travelbook-backend.git
 cd travelbook-backend
 ```
 
-**2. Install dependencies:**
+**2. Set up the database:**
+```bash
+# Run the SQL script as described above
+mysql -u root -p < create_and_populate_db.sql
+```
+
+**3. Install dependencies:**
 ```bash
 mvn clean install
 ```
 
-**3. Run the application:**
+**4. Run the application:**
 ```bash
 mvn spring-boot:run
 ```
@@ -229,6 +243,7 @@ travelbook-backend/
 ├── mvnw                             # Maven wrapper (Unix)
 ├── mvnw.cmd                         # Maven wrapper (Windows)
 ├── pom.xml                          # Maven dependencies
+├── create_and_populate_db.sql       # Database initialization script
 ├── README.md
 └── src/
     ├── main/
@@ -345,17 +360,19 @@ SELECT * FROM cart_items;
 
 ## Integration with Frontend
 
-This backend is designed to work with an Angular frontend located at `http://localhost:4200`.
+This backend is designed to work with the [TravelBook Frontend](https://github.com/yourusername/travelbook-frontend) Angular application.
 
 **Frontend Integration:**
-1. Angular app makes HTTP requests to REST endpoints
-2. CORS is configured to allow Angular origin
-3. Spring Data REST automatically exposes repositories
-4. Custom checkout endpoint handles complex booking logic
+1. Angular app runs on `http://localhost:4200`
+2. Makes HTTP requests to backend REST endpoints
+3. CORS is configured to allow Angular origin
+4. Spring Data REST automatically exposes repositories
+5. Custom checkout endpoint handles complex booking logic
 
-**Not Included:**
-- The Angular frontend code (maintained separately)
-- Frontend modification is not part of this project scope
+**To run the full stack:**
+1. Start the backend: `mvn spring-boot:run`
+2. Start the frontend: `ng serve` (in frontend repo)
+3. Access the application at `http://localhost:4200`
 
 ## Development Workflow
 
@@ -375,7 +392,7 @@ This backend is designed to work with an Angular frontend located at `http://loc
 - No payment processing
 - No email notifications
 - Minimal error handling beyond validation
-- Manual database schema setup required
+- Database reset script overwrites all data (use carefully)
 
 **Design Trade-offs:**
 - Used Spring Data REST for auto-generated endpoints (rapid development vs. control)
@@ -388,12 +405,14 @@ This backend is designed to work with an Angular frontend located at `http://loc
 - Add Spring Security with JWT authentication
 - Implement role-based access control (admin vs. customer)
 - Add API rate limiting
+- Secure database credentials
 
 **Features:**
 - Payment gateway integration (Stripe, PayPal)
 - Email confirmation system
 - Booking cancellation/modification
 - Vacation package recommendations
+- Customer review system
 
 **Technical Improvements:**
 - Implement DTO pattern to decouple entities from API
@@ -401,7 +420,7 @@ This backend is designed to work with an Angular frontend located at `http://loc
 - Set up CI/CD pipeline
 - Add API documentation (Swagger/OpenAPI)
 - Implement caching for frequently accessed data
-- Automated database migration (Flyway/Liquibase)
+- Database migrations (Flyway/Liquibase) instead of reset script
 
 **Scalability:**
 - Database indexing optimization
@@ -412,7 +431,7 @@ This backend is designed to work with an Angular frontend located at `http://loc
 ## Common Issues
 
 **Issue: Application fails to start - "Table doesn't exist"**
-- Solution: Ensure database schema is created before running the application. The schema is not auto-generated.
+- Solution: Run the `create_and_populate_db.sql` script to initialize the database
 
 **Issue: CORS errors from Angular frontend**
 - Solution: Verify `@CrossOrigin` annotation includes Angular dev server URL (`http://localhost:4200`)
@@ -422,6 +441,9 @@ This backend is designed to work with an Angular frontend located at `http://loc
 
 **Issue: Database connection refused**
 - Solution: Verify MySQL is running and credentials in `application.properties` are correct
+
+**Issue: Data missing after restart**
+- Solution: The SQL script drops and recreates the database. For persistent data, modify the script or use Hibernate's `ddl-auto=update`
 
 ## License
 

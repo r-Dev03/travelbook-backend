@@ -17,7 +17,7 @@ TravelBook Backend is a Spring Boot REST API that provides backend functionality
 - Shopping cart and checkout processing
 - Order tracking
 
-This backend integrates with an Angular frontend ([TravelBook Frontend](https://github.com/yourusername/travelbook-frontend)) to provide a complete booking experience.
+This backend integrates with an Angular frontend ([TravelBook Frontend](https://github.com/r-Dev03/travelbook-frontend)) to provide a complete booking experience.
 
 ## Tech Stack
 
@@ -36,10 +36,6 @@ This backend integrates with an Angular frontend ([TravelBook Frontend](https://
 - IntelliJ IDEA Ultimate Edition
 - Lombok (reduce boilerplate code)
 - MySQL Workbench
-
-## Project Context
-
-This backend was built to replace a legacy 1990s system for a travel agency. The goal was to create a modern, maintainable REST API that integrates with a recently rebuilt Angular frontend, addressing technical debt and providing ongoing support.
 
 ## Architecture
 
@@ -152,7 +148,7 @@ spring.data.rest.base-path=/api
 
 **1. Clone the repository:**
 ```bash
-git clone https://github.com/yourusername/travelbook-backend.git
+git clone https://github.com/r-Dev03/travelbook-backend.git
 cd travelbook-backend
 ```
 
@@ -288,46 +284,30 @@ travelbook-backend/
 
 ## Key Features
 
-### Input Validation
-
-All customer inputs are validated using Bean Validation annotations:
-```java
-@Entity
-public class Customer {
-    @NotNull
-    @Size(min = 1, message = "First name is required")
-    private String firstName;
-    
-    @NotNull
-    @Pattern(regexp = "^[0-9]{5}$", message = "Postal code must be 5 digits")
-    private String postal_code;
-    
-    @NotNull
-    @Pattern(regexp = "^[0-9]{3}-[0-9]{4}$", message = "Phone format: XXX-XXXX")
-    private String phone;
-}
-```
-
 ### CORS Support
 
 Cross-origin resource sharing enabled for frontend integration:
 ```java
 @CrossOrigin("http://localhost:4200")
-@RepositoryRestResource
 public interface VacationRepository extends JpaRepository<Vacation, Long> {
 }
 ```
 
 ### Sample Data Loading
 
-Five sample customers are programmatically added on application startup (without overwriting existing data):
+Sample customers are programmatically added on application startup:
 ```java
 @Component
 public class BootStrapData implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
-        if (customerRepository.count() == 0) {
-            // Add 5 sample customers
+        Set<Customer> customersToAdd = new HashSet<>(customerRepository.findAll());
+        
+        // Add up to 6 sample customers if not already present
+        while (customersToAdd.size() < 6) {
+            Customer customer = new Customer();
+            // Set customer details...
+            customerRepository.save(customer);
         }
     }
 }
@@ -360,7 +340,7 @@ SELECT * FROM cart_items;
 
 ## Integration with Frontend
 
-This backend is designed to work with the [TravelBook Frontend](https://github.com/yourusername/travelbook-frontend) Angular application.
+This backend is designed to work with the [TravelBook Frontend](https://github.com/r-Dev03/travelbook-frontend) Angular application.
 
 **Frontend Integration:**
 1. Angular app runs on `http://localhost:4200`
@@ -384,71 +364,15 @@ This backend is designed to work with the [TravelBook Frontend](https://github.c
 - Test with Postman
 - Verify database changes in MySQL Workbench
 
-## Limitations & Trade-offs
+## Limitations
 
-**Current Limitations:**
 - No authentication/authorization (assumes trusted frontend)
-- Basic validation only (no complex business rules)
+- Basic validation only (database-level constraints)
 - No payment processing
 - No email notifications
 - Minimal error handling beyond validation
 - Database reset script overwrites all data (use carefully)
 
-**Design Trade-offs:**
-- Used Spring Data REST for auto-generated endpoints (rapid development vs. control)
-- Simple checkout flow (ease of implementation vs. flexibility)
-- Direct entity exposure via REST (convenience vs. DTO pattern)
-
-## Future Enhancements
-
-**Security:**
-- Add Spring Security with JWT authentication
-- Implement role-based access control (admin vs. customer)
-- Add API rate limiting
-- Secure database credentials
-
-**Features:**
-- Payment gateway integration (Stripe, PayPal)
-- Email confirmation system
-- Booking cancellation/modification
-- Vacation package recommendations
-- Customer review system
-
-**Technical Improvements:**
-- Implement DTO pattern to decouple entities from API
-- Add comprehensive unit and integration tests
-- Set up CI/CD pipeline
-- Add API documentation (Swagger/OpenAPI)
-- Implement caching for frequently accessed data
-- Database migrations (Flyway/Liquibase) instead of reset script
-
-**Scalability:**
-- Database indexing optimization
-- Read replicas for vacation/excursion queries
-- Redis session management
-- Microservices architecture (separate booking, catalog, customer services)
-
-## Common Issues
-
-**Issue: Application fails to start - "Table doesn't exist"**
-- Solution: Run the `create_and_populate_db.sql` script to initialize the database
-
-**Issue: CORS errors from Angular frontend**
-- Solution: Verify `@CrossOrigin` annotation includes Angular dev server URL (`http://localhost:4200`)
-
-**Issue: Validation errors not showing in response**
-- Solution: Add `@Valid` annotation to controller method parameters
-
-**Issue: Database connection refused**
-- Solution: Verify MySQL is running and credentials in `application.properties` are correct
-
-**Issue: Data missing after restart**
-- Solution: The SQL script drops and recreates the database. For persistent data, modify the script or use Hibernate's `ddl-auto=update`
-
 ## License
 
 MIT License - see LICENSE file for details
-
----
-
-*A demonstration of Spring Boot backend development fundamentals including JPA, REST APIs, and database integration.*

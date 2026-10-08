@@ -2,7 +2,7 @@
 
 **Spring Boot REST API for a vacation booking platform, with a transactional checkout.**
 
-[![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://www.oracle.com/java/)
+[![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-blue.svg)](https://www.mysql.com/)
 
@@ -14,8 +14,8 @@ Customers browse vacation packages, add excursions, and check out. Each order is
 
 - REST API mapping 7 JPA entities to MySQL: vacations, excursions, carts, cart items, customers, divisions, and countries
 - Transactional checkout that saves complete orders and issues a UUID tracking number
-- Fixed orders saving without their items by syncing both sides of the bidirectional JPA relationships
-- Sample customers loaded at startup, without creating duplicates on restart
+- Keeps both sides of the bidirectional Cart–CartItem relationship in sync, so every order is saved with all of its items
+- Sample customers loaded at startup until the table holds six, so restarts add none
 
 ## How It Works
 
@@ -51,6 +51,8 @@ Order confirmation view
 
 If any save fails, every write in the bracket rolls back together.
 
+Simplified from `CheckoutServiceImpl`:
+
 ```java
 @Transactional
 public PurchaseResponse placeOrder(Purchase purchase) {
@@ -69,7 +71,7 @@ public PurchaseResponse placeOrder(Purchase purchase) {
 ```
 
 - **`@Transactional`:** the cart, its items, and the customer are saved together. If any part fails, the whole order rolls back instead of leaving partial data.
-- **Syncing both sides:** in a bidirectional JPA relationship, only the owning side (`CartItem`, which holds `cart_id`) controls the foreign key. Adding items to the cart's collection alone saved them with a null `cart_id`, so orders came back without their items. Setting `item.setCart(cart)` as well fixed it.
+- **Syncing both sides:** `Cart` and `CartItem` reference each other, and each side does a different job. The cart's item collection carries the cascade, so adding each item to it is what gets the items saved along with the cart. `CartItem` is the owning side that maps the `cart_id` foreign key, so each item also has to point back at its cart. Setting only one side either skips saving the items or leaves `cart_id` empty, which the schema rejects.
 
 ## API
 
@@ -86,7 +88,7 @@ All endpoints are prefixed with `/api`.
 
 ## Getting Started
 
-**Prerequisites:** Java 17, MySQL 8
+**Prerequisites:** Java 21, MySQL 8
 
 ```bash
 git clone https://github.com/r-Dev03/travelbook-backend.git
@@ -102,7 +104,7 @@ The API runs at `http://localhost:8080/api`. The database connection is configur
 
 ## Tech Stack
 
-Java 17 · Spring Boot · Spring Data JPA / Hibernate · Spring Data REST · MySQL · Lombok · Maven
+Java 21 · Spring Boot · Spring Data JPA / Hibernate · Spring Data REST · MySQL · Lombok · Maven
 
 ## Known Limitations
 
